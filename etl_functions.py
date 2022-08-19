@@ -5,7 +5,8 @@ from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear
 
 def process_song_data(spark, input_data, output_data):
     # get filepath to song data file
-    song_data = f"{input_data}/song_data/*/*/*"
+    ## only taking subset of files otherwise the spark job will take a very long time (it does a S3 API call for each of the ~14,000 song files on S3)
+    song_data = f"{input_data}/song_data/A/A/*"
 
     # read song data file
     df = spark.read.json(song_data)

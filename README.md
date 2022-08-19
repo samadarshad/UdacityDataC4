@@ -31,4 +31,7 @@ This project is an ETL pipeline for a data lake hosted on S3. We will load json 
 6. Run the application
 `spark-submit etl.py --master yarn --py-files etl_functions.py`
    
-Note that this will take a long time as it runs a process for each file in the directory (song_data has approx 14,000 files, log_data 31 files).
+Note that this will usually take a long time as it performs an API call for each file in S3 (song_data has approx 14,000 files, log_data 31 files).
+Therefore we have limited it to a subset of data that exists in /song_data/A/A/*.
+This would have been resolved by using the s3a:// protocol.
+https://stackoverflow.com/questions/30385981/how-to-access-s3a-files-from-apache-spark
