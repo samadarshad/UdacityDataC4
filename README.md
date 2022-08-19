@@ -3,35 +3,32 @@
 
 This project is an ETL pipeline for a data lake hosted on S3. We will load json data from S3, process the data into fact & dimension tables using Spark, and load them back into S3 as parquet files.
 
-## ETL Pipeline
-    
-1.  Read data from S3
-    
-    -   Song data:  `s3://udacity-dend/song_data`
-    -   Log data:  `s3://udacity-dend/log_data`
-    
-    The script reads song_data and load_data from S3.
-    
-3.  Process data using spark
-    
-    Transforms them to create five different tables listed below : 
-    #### Fact Table
-	 **songplays**  - records in log data associated with song plays i.e. records with page  `NextSong`
-    -   _songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent_
+## Setup
+1. A S3 bucket to store the output. Ensure S3 can be written into via the EMR role. e.g.:
+   ```python
+        {
+            "Sid": "Stmt1660907761447",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::324941539183:role/EMR_EC2_DefaultRole"
+            },
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::spark-dev-324941539183"
+        }
 
-	#### Dimension Tables
-	 **users**  - users in the app
-		Fields -   _user_id, first_name, last_name, gender, level_
-		
-	 **songs**  - songs in music database
-    Fields - _song_id, title, artist_id, year, duration_
-    
-	**artists**  - artists in music database
-    Fields -   _artist_id, name, location, lattitude, longitude_
-    
-	  **time**  - timestamps of records in  **songplays**  broken down into specific units
-    Fields -   _start_time, hour, day, week, month, year, weekday_
-    
-4.  Load it back to S3
-    
-    Writes them to partitioned parquet files in table directories on S3.
+
+2. An EMR cluster with Spark. Use the default role above for the EC2. Enable keypair.
+
+3. Ensure inbound SSH on Master node.
+
+4. Confirm ssh connection:
+`ssh -i "udacity_data_eng.pem" hadoop@ec2-18-132-1-161.eu-west-2.compute.amazonaws.com`
+
+5. Transfer etl.py and etl_functions.py to master node:
+`scp -i "udacity_data_eng.pem" etl.py hadoop@ec2-18-132-1-161.eu-west-2.compute.amazonaws.com:~/`
+`scp -i "udacity_data_eng.pem" etl_functions.py hadoop@ec2-18-132-1-161.eu-west-2.compute.amazonaws.com:~/`
+   
+6. Run the application
+`spark-submit etl.py --master yarn --py-files etl_functions.py`
+   
+Note that this will take a long time as it runs a process for each file in the directory (song_data has approx 14,000 files, log_data 31 files).
